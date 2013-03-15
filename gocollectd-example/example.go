@@ -17,7 +17,7 @@ func main() {
 		packet := <-c
 		fmt.Println("-")
 		for i, name := range packet.ValueNames() {
-			values, _ := packet.Values()
+			values, _ := packet.ValueNumbers()
 			fmt.Printf("%s %35s %v\n", packet.Time().Format(time.RFC3339), name, values[i])
 		}
 	}

@@ -17,34 +17,70 @@ const (
 	TypeAbsolute = 3
 )
 
-type Value interface {
+// A collectd value is sent as a int64, uint64, or float64. Number provides
+// some useful functions to help handle this flexibility.
+type Number interface {
+	// CollectdType gives the Collectd Type of this number.
 	CollectdType() uint8
+
+	// Float64 converts this number to a float to avoid type assertions.
+	Float64()      float64
 }
 
+// A collectd Counter value
 type Counter uint64
 
+// CollectdType returns TypeCounter
 func (v Counter) CollectdType() uint8 {
 	return TypeCounter
 }
 
+// Float64 converts this number to a float to avoid type assertions.
+func (v Counter) Float64() float64 {
+	return float64(v)
+}
+
+// A collectd Guage value
 type Guage float64
 
+// CollectdType returns TypeGuage
 func (v Guage) CollectdType() uint8 {
 	return TypeGuage
 }
 
+// Float64 converts this number to a float to avoid type assertions.
+func (v Guage) Float64() float64 {
+	return float64(v)
+}
+
+// A collectd Derive value
 type Derive int64
 
+// CollectdType returns TypeDerive
 func (v Derive) CollectdType() uint8 {
 	return TypeDerive
 }
 
+// Float64 converts this number to a float to avoid type assertions.
+func (v Derive) Float64() float64 {
+	return float64(v)
+}
+
+// A collectd Absolute value
 type Absolute uint64
 
+// CollectdType returns TypeAbsolute
 func (v Absolute) CollectdType() uint8 {
 	return TypeAbsolute
 }
 
+// Float64 converts this number to a float to avoid type assertions.
+func (v Absolute) Float64() float64 {
+	return float64(v)
+}
+
+// A packet is a set of collectd values that were sent at once by a collectd
+// plugin.
 type Packet struct {
 	Hostname       string
 	Plugin         string
@@ -56,19 +92,28 @@ type Packet struct {
 	Bytes          []byte
 }
 
+// TimeUnixNano returns the measurement time in nanoseconds since unix epoch.
 func (p Packet) TimeUnixNano() int64 {
 	// 1.0737... is 2^30 (collectds' subsecond interval) / 10^-9 (nanoseconds)
 	return int64(float64(p.CdTime) / 1.073741824)
 }
 
+// TimeUnix returns the measurement time in seconds since unix epoch.
 func (p Packet) TimeUnix() int64 {
 	return int64(p.CdTime >> 30)
 }
 
+// Time returns the measurement time as a go time.
 func (p Packet) Time() time.Time {
 	return time.Unix(0, p.TimeUnixNano())
 }
 
+// ValueCount returns the number of values in this packet.
+func (p Packet) ValueCount() int {
+	return len(p.DataTypes)
+}
+
+// ValueBytes returns the raw bytes for each value.
 func (p Packet) ValueBytes() [][]byte {
 	b := make([][]byte, len(p.DataTypes))
 	for i := range b {
@@ -77,8 +122,9 @@ func (p Packet) ValueBytes() [][]byte {
 	return b
 }
 
-func (p Packet) Values() ([]Value, error) {
-	r := make([]Value, len(p.DataTypes))
+// ValueNumbers returns the values as Numbers
+func (p Packet) ValueNumbers() ([]Number, error) {
+	r := make([]Number, len(p.DataTypes))
 
 	var err error
 	buf := bytes.NewBuffer(p.Bytes)
@@ -105,6 +151,8 @@ func (p Packet) Values() ([]Value, error) {
 	return r, err
 }
 
+// ValueNames attempts to reformat collectd's plugin/type/instance heirarchy
+// into strings.
 func (p Packet) ValueNames() []string {
 	r := make([]string, len(p.DataTypes))
 	for i := range p.DataTypes {

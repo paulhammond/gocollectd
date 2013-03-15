@@ -8,6 +8,8 @@ import (
 	"net"
 )
 
+// Listen creates a UDP server that parses collectd data into packets and
+// sends them over a channel.
 func Listen(addr string, c chan Packet) {
 	laddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {

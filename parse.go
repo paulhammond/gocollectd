@@ -9,9 +9,13 @@ import (
 	"errors"
 )
 
+// The error returned if a valid but unsupported packet is recieved
 var ErrorUnsupported = errors.New("Unsupported collectd packet recieved")
+
+// The error returned if an invalid packet is recieved
 var ErrorInvalid = errors.New("Invalid collectd packet recieved")
 
+// Parse parses some bytes into packets.
 func Parse(b []byte) (*[]Packet, error) {
 	r := make([]Packet, 0)
 

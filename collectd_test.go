@@ -35,6 +35,13 @@ func TestPacketNanoSeconds(t *testing.T) {
 	}
 }
 
+func TestPacketValueCount(t *testing.T) {
+	result := testPacket.ValueCount()
+	if result != 3 {
+		t.Errorf("expected test packet to have 3 values, got %d", result)
+	}
+}
+
 func TestPacketValueBytes(t *testing.T) {
 	result := testPacket.ValueBytes()
 	expected := [][]byte{
@@ -47,12 +54,12 @@ func TestPacketValueBytes(t *testing.T) {
 	}
 }
 
-func TestPacketValues(t *testing.T) {
-	result, err := testPacket.Values()
+func TestPacketValueNumbers(t *testing.T) {
+	result, err := testPacket.ValueNumbers()
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	expected := []Value{
+	expected := []Number{
 		Derive(8914827),
 		Guage(1048969216),
 		Derive(8914828),
