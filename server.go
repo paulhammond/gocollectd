@@ -1,8 +1,8 @@
 package gocollectd
 
 import (
-	"net"
 	"log"
+	"net"
 )
 
 func Listen(addr string, c chan Packet) {

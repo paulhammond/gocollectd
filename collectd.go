@@ -1,10 +1,10 @@
 package gocollectd
 
 import (
-	"time"
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"time"
 )
 
 const (
