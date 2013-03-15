@@ -4,6 +4,7 @@ import (
 	"time"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 )
 
 const (
@@ -99,4 +100,40 @@ func (p Packet) Values() ([]Value, error) {
 		}
 	}
 	return r, err
+}
+
+func (p Packet) ValueNames() []string {
+	r := make([]string, len(p.DataTypes))
+	for i := range p.DataTypes {
+		var name string
+		// todo: think of ways to make this not a compiled in hack
+		// todo: collectd 4 uses different patterns for some plugins
+		// https://collectd.org/wiki/index.php/V4_to_v5_migration_guide
+		switch p.Plugin {
+		case "df":
+			name = fmt.Sprintf("df_%s_%s", p.PluginInstance, p.TypeInstance)
+		case "interface":
+			switch i {
+			case 0:
+				name = fmt.Sprintf("%s_%s_tx", p.Type, p.PluginInstance)
+			case 1:
+				name = fmt.Sprintf("%s_%s_rx", p.Type, p.PluginInstance)
+			}
+		case "load":
+			switch i {
+			case 0:
+				name = "load1"
+			case 1:
+				name = "load5"
+			case 2:
+				name = "load15"
+			}
+		case "memory":
+			name = fmt.Sprintf("memory_%s", p.TypeInstance)
+		default:
+			name = fmt.Sprintf("%s_%s_%s_%s_%d", p.Plugin, p.PluginInstance, p.Type, p.TypeInstance, i)
+		}
+		r[i] = name
+	}
+	return r
 }
