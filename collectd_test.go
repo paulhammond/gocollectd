@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var testPacket = Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927039889790, []uint8{Guage, Guage}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")}
+var testPacket = Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927039889790, []uint8{Derive, Derive}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")}
 var testDate = time.Date(2013, time.March, 14, 21, 19, 53, 804828672, time.UTC)
 
 func TestPacketTime(t *testing.T) {

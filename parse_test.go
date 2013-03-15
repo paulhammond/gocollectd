@@ -31,7 +31,7 @@ func h2b(s ...string) []byte {
 	return b
 }
 
-func TestParse5(t *testing.T) {
+func TestParsev5(t *testing.T) {
 	// unfortunately a real hexdump seems the best way to test this
 	b := h2b(
 		"00 00 00 0f 6c 61 70 74 6f 70 2e 6c 61 6e 00", // hostname: "laptop.lan"
@@ -51,7 +51,7 @@ func TestParse5(t *testing.T) {
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00", // 2 more values
 	)
 	expected := []Packet{
-		{"laptop.lan", "memory", "", "", "wired", 1463827927039889790, []uint8{Guage}, h2b("00 00 00 00 00 43 cf 41")},
+		{"laptop.lan", "memory", "", "", "wired", 1463827927039889790, []uint8{Guage}, h2b("41 cf 43 00 00 00 00 00")},
 		{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927039906970, []uint8{Derive, Derive}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")},
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 1463827927040016492, []uint8{Derive, Derive}, h2b("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")},
 	}
@@ -64,7 +64,7 @@ func TestParse5(t *testing.T) {
 	}
 }
 
-func TestParse4(t *testing.T) {
+func TestParsev4(t *testing.T) {
 	// worse than a hexdump: this is an edited hexdump based on the spec
 	// as I don't have a copy of collectd4 running right now
 	b := h2b(
@@ -85,15 +85,35 @@ func TestParse4(t *testing.T) {
 	)
 
 	expected := []Packet{
-		{"laptop.lan", "memory", "", "", "wired", 1463827926175711232, []uint8{Guage}, h2b("00 00 00 00 00 43 cf 41")},
+		{"laptop.lan", "memory", "", "", "wired", 1463827926175711232, []uint8{Guage}, h2b("41 cf 43 00 00 00 00 00")},
 		{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, []uint8{Derive, Derive}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")},
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 1463827927249453056, []uint8{Derive, Derive}, h2b("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")},
 	}
 	result, err := Parse(b)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
+	} else if !reflect.DeepEqual(*result, expected) {
+		t.Errorf("expected\n%v\ngot\n%v\n", expected, *result)
 	}
-	if !reflect.DeepEqual(*result, expected) {
+}
+
+func TestParseGuages(t *testing.T) {
+	b := h2b(
+		"00 00 00 0f 6c 61 70 74 6f 70 2e 6c 61 6e 00", // hostname: "laptop.lan"
+		"00 08 00 0c 14 50 8f be 73 82 51 7e",          // time, hi res
+		"00 02 00 0b 6d 65 6d 6f 72 79 00",             // plugin: memory
+		"00 06 00 21 00 03 02 01 02",                   // value specs
+		"00 00 00 00 00 88 07 8b",                      // value1
+		"00 00 00 00 00 43 cf 41",                      // value2
+		"00 00 00 00 00 88 07 8c",                      // value3
+	)
+	expected := []Packet{
+		{"laptop.lan", "memory", "", "", "", 1463827927039889790, []uint8{Derive, Guage, Derive}, h2b("00 00 00 00 00 88 07 8b 41 cf 43 00 00 00 00 00 00 00 00 00 00 88 07 8c")},
+	}
+	result, err := Parse(b)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	} else if !reflect.DeepEqual(*result, expected) {
 		t.Errorf("expected\n%v\ngot\n%v\n", expected, *result)
 	}
 }
@@ -102,8 +122,7 @@ func TestParseEmpty(t *testing.T) {
 	result, err := Parse([]byte{})
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
-	}
-	if !reflect.DeepEqual(*result, []Packet{}) {
+	} else if !reflect.DeepEqual(*result, []Packet{}) {
 		t.Errorf("expected [] got %v", *result)
 	}
 }
@@ -119,6 +138,7 @@ func TestErrors(t *testing.T) {
 		{"bad length packet", "00 00 00 03", ErrorInvalid},
 		{"short packet", "00 00 00 04", ErrorInvalid},
 		{"not enough data packet", "00 00 00 05", ErrorInvalid},
+		{"value packet with missing data", "00 06 00 18 00 02 02 02 00 00 00 00 00 88 07 8b", ErrorInvalid},
 		{"valid packet with extra data", "00 05 00 05 00 ff", io.ErrUnexpectedEOF},
 		{"valid packet with extra data", "00 05 00 05 00 ff ff", io.ErrUnexpectedEOF},
 		{"valid packet with extra data", "00 05 00 05 00 ff ff ff", io.ErrUnexpectedEOF},

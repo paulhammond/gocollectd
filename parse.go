@@ -72,11 +72,18 @@ func Parse(b []byte) (*[]Packet, error) {
 			copy(p.Bytes, partBytes[2+valueCount:2+valueCount+(valueCount*8)])
 			// todo: what if some data is missing?
 
-			p.DataTypes = make([]uint8, valueCount, valueCount) // holds a copy so we lose reference to the underlying slice data
-			for i := range p.DataTypes {
-				err = binary.Read(partBuffer, binary.BigEndian, &p.DataTypes[i])
-				if err != nil {
-					return nil, err
+			p.DataTypes = make([]uint8, valueCount, valueCount)
+			err = binary.Read(partBuffer, binary.BigEndian, p.DataTypes)
+			if err != nil {
+				return nil, err
+			}
+			for i, t := range p.DataTypes {
+				// derive/guage is little endian in protocol (!?)
+				// reverse it so other code can be big endian
+				if t == Guage {
+					for j, k := i*8, (i*8)+7; j < k; j, k = j+1, k-1 {
+						p.Bytes[j], p.Bytes[k] = p.Bytes[k], p.Bytes[j]
+					}
 				}
 			}
 
