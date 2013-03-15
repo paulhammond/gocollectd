@@ -3,9 +3,13 @@ package gocollectd
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 )
 
-func Parse(b []byte) []Value {
+var ErrorUnsupported = errors.New("Signed or encrypted collectd data is currently unsupported")
+var ErrorInvalid = errors.New("Invalid collectd packet recieved")
+
+func Parse(b []byte) (*[]Value, error) {
 	r := make([]Value, 0)
 
 	buf := bytes.NewBuffer(b)
@@ -14,10 +18,20 @@ func Parse(b []byte) []Value {
 	var partLength uint16
 	var time uint64
 	var valueCount uint16
+	var err error
 
 	for buf.Len() > 0 {
-		binary.Read(buf, binary.BigEndian, &partType)
-		binary.Read(buf, binary.BigEndian, &partLength)
+		err = binary.Read(buf, binary.BigEndian, &partType)
+		if err != nil {
+			return nil, err
+		}
+		err = binary.Read(buf, binary.BigEndian, &partLength)
+		if err != nil {
+			return nil, err
+		}
+		if partLength < 5 {
+			return nil, ErrorInvalid
+		}
 		partBytes := buf.Next(int(partLength) - 4)
 		partBuffer := bytes.NewBuffer(partBytes)
 		switch {
@@ -25,7 +39,10 @@ func Parse(b []byte) []Value {
 			str := partBuffer.String()
 			val.Hostname = str[0 : len(str)-1]
 		case partType == 1:
-			binary.Read(partBuffer, binary.BigEndian, &time)
+			err = binary.Read(partBuffer, binary.BigEndian, &time)
+			if err != nil {
+				return nil, err
+			}
 			val.CdTime = time << 30
 		case partType == 2:
 			str := partBuffer.String()
@@ -40,14 +57,20 @@ func Parse(b []byte) []Value {
 			str := partBuffer.String()
 			val.pluginTypeInstance = str[0 : len(str)-1]
 		case partType == 6:
-			binary.Read(partBuffer, binary.BigEndian, &valueCount)
+			err = binary.Read(partBuffer, binary.BigEndian, &valueCount)
+			if err != nil {
+				return nil, err
+			}
 
 			for i := uint16(0); i < valueCount; i++ {
 
 				valueBytes := make([]byte, 8, 8) // holds a copy so we lose reference to the underlying slice data
 
 				// messy: collectd's protocol puts things in a weird order.
-				binary.Read(partBuffer, binary.BigEndian, &val.DataType)
+				err = binary.Read(partBuffer, binary.BigEndian, &val.DataType)
+				if err != nil {
+					return nil, err
+				}
 				copy(valueBytes, partBytes[2+valueCount+(i*8):2+valueCount+8+(i*8)])
 
 				val.Number = i
@@ -59,7 +82,10 @@ func Parse(b []byte) []Value {
 			// interval, ignore
 		case partType == 8:
 			// high res time
-			binary.Read(partBuffer, binary.BigEndian, &val.CdTime)
+			err = binary.Read(partBuffer, binary.BigEndian, &val.CdTime)
+			if err != nil {
+				return nil, err
+			}
 		case partType == 9:
 			// interval, ignore
 		case partType == 0x100:
@@ -68,11 +94,13 @@ func Parse(b []byte) []Value {
 			// severity, ignore
 		case partType == 0x200:
 			// Signature (HMAC-SHA-256), todo
+			return nil, ErrorUnsupported
 		case partType == 0x210:
 			// Encryption (AES-256/OFB/SHA-1), todo
+			return nil, ErrorUnsupported
 		default:
 			// todo: log unexpected type here
 		}
 	}
-	return r
+	return &r, nil
 }

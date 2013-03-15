@@ -6,6 +6,7 @@ import (
 	"strings"
 	"strconv"
 	"reflect"
+	"io"
 )
 
 func hexdumpToBytes(s ...string) ([]byte, error) {
@@ -56,9 +57,12 @@ func TestParse5(t *testing.T) {
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927040016492, 2, h2b("00 00 00 00 00 00 00 00")},
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927040016492, 2, h2b("00 00 00 00 00 00 00 00")},
 	}
-	result := Parse(b)
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("expected\n%v\ngot\n%v\n", expected, result)
+	result, err := Parse(b)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if !reflect.DeepEqual(*result, expected) {
+		t.Errorf("expected\n%v\ngot\n%v\n", expected, *result)
 	}
 }
 
@@ -89,16 +93,48 @@ func TestParse4(t *testing.T) {
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927249453056, 2, h2b("00 00 00 00 00 00 00 00")},
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927249453056, 2, h2b("00 00 00 00 00 00 00 00")},
 	}
-	result := Parse(b)
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("expected\n%v\ngot\n%v\n", expected, result)
+	result, err := Parse(b)
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if !reflect.DeepEqual(*result, expected) {
+		t.Errorf("expected\n%v\ngot\n%v\n", expected, *result)
 	}
 }
 
-
 func TestParseEmpty(t *testing.T) {
-	result := Parse([]byte{})
-	if !reflect.DeepEqual(result, []Value{}) {
-		t.Errorf("expected [] got %v", result)
+	result, err := Parse([]byte{})
+	if err != nil {
+		t.Errorf("expected no error, got %v", err)
+	}
+	if !reflect.DeepEqual(*result, []Value{}) {
+		t.Errorf("expected [] got %v", *result)
+	}
+}
+
+func TestErrors(t *testing.T) {
+	tests := []struct{
+		name string
+		in string
+		out error
+	} {
+		// these should never get sent
+		{ "bad length packet", "00", io.ErrUnexpectedEOF },
+		{ "bad length packet", "00 00 00 03", ErrorInvalid },
+		{ "short packet", "00 00 00 04", ErrorInvalid },
+		{ "valid packet with extra data", "00 05 00 05 00 ff", io.ErrUnexpectedEOF },
+		// note: real encrypted and signed packets have more data, but
+		// the protocol is undocumented so I've not made realistic tests
+		{ "encrypted packet", "02 10 00 05 00", ErrorUnsupported },
+		{ "signed packet", "02 00 00 05 00", ErrorUnsupported },
+	}
+	for _, test := range tests {
+		result, err := Parse(h2b(test.in))
+		if err != test.out {
+			t.Errorf("%s: expected '%v', got '%v'", test.name, test.out, err)
+		}
+		if result != nil {
+			t.Errorf("%s: expected nil got %v", test.name, *result)
+		}
 	}
 }
