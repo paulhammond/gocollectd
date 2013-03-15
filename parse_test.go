@@ -122,11 +122,17 @@ func TestErrors(t *testing.T) {
 		{ "bad length packet", "00", io.ErrUnexpectedEOF },
 		{ "bad length packet", "00 00 00 03", ErrorInvalid },
 		{ "short packet", "00 00 00 04", ErrorInvalid },
+		{ "not enough data packet", "00 00 00 05", ErrorInvalid },
 		{ "valid packet with extra data", "00 05 00 05 00 ff", io.ErrUnexpectedEOF },
+		{ "valid packet with extra data", "00 05 00 05 00 ff ff", io.ErrUnexpectedEOF },
+		{ "valid packet with extra data", "00 05 00 05 00 ff ff ff", io.ErrUnexpectedEOF },
+		{ "valid packet with extra data", "00 05 00 05 00 ff ff ff ff", ErrorInvalid },
+
 		// note: real encrypted and signed packets have more data, but
 		// the protocol is undocumented so I've not made realistic tests
 		{ "encrypted packet", "02 10 00 05 00", ErrorUnsupported },
 		{ "signed packet", "02 00 00 05 00", ErrorUnsupported },
+		{ "as-yet-undefined packet", "03 00 00 05 00", ErrorUnsupported },
 	}
 	for _, test := range tests {
 		result, err := Parse(h2b(test.in))

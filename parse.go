@@ -6,7 +6,7 @@ import (
 	"errors"
 )
 
-var ErrorUnsupported = errors.New("Signed or encrypted collectd data is currently unsupported")
+var ErrorUnsupported = errors.New("Unsupported collectd packet recieved")
 var ErrorInvalid = errors.New("Invalid collectd packet recieved")
 
 func Parse(b []byte) (*[]Value, error) {
@@ -14,49 +14,52 @@ func Parse(b []byte) (*[]Value, error) {
 
 	buf := bytes.NewBuffer(b)
 	var val Value
-	var partType uint16
-	var partLength uint16
+	var packetHeader struct{
+		PartType uint16
+		PartLength uint16
+	}
 	var time uint64
 	var valueCount uint16
 	var err error
 
 	for buf.Len() > 0 {
-		err = binary.Read(buf, binary.BigEndian, &partType)
+		err = binary.Read(buf, binary.BigEndian, &packetHeader)
 		if err != nil {
 			return nil, err
 		}
-		err = binary.Read(buf, binary.BigEndian, &partLength)
-		if err != nil {
-			return nil, err
-		}
-		if partLength < 5 {
+		if packetHeader.PartLength < 5 {
 			return nil, ErrorInvalid
 		}
-		partBytes := buf.Next(int(partLength) - 4)
+
+		partBytes := buf.Next(int(packetHeader.PartLength) - 4)
+		if len(partBytes) < int(packetHeader.PartLength) - 4 {
+			return nil, ErrorInvalid
+		}
 		partBuffer := bytes.NewBuffer(partBytes)
-		switch {
-		case partType == 0:
+
+		switch packetHeader.PartType {
+		case 0:
 			str := partBuffer.String()
 			val.Hostname = str[0 : len(str)-1]
-		case partType == 1:
+		case 1:
 			err = binary.Read(partBuffer, binary.BigEndian, &time)
 			if err != nil {
 				return nil, err
 			}
 			val.CdTime = time << 30
-		case partType == 2:
+		case 2:
 			str := partBuffer.String()
 			val.plugin = str[0 : len(str)-1]
-		case partType == 3:
+		case 3:
 			str := partBuffer.String()
 			val.pluginInstance = str[0 : len(str)-1]
-		case partType == 4:
+		case 4:
 			str := partBuffer.String()
 			val.pluginType = str[0 : len(str)-1]
-		case partType == 5:
+		case 5:
 			str := partBuffer.String()
 			val.pluginTypeInstance = str[0 : len(str)-1]
-		case partType == 6:
+		case 6:
 			err = binary.Read(partBuffer, binary.BigEndian, &valueCount)
 			if err != nil {
 				return nil, err
@@ -78,28 +81,28 @@ func Parse(b []byte) (*[]Value, error) {
 
 				r = append(r, val)
 			}
-		case partType == 7:
+		case 7:
 			// interval, ignore
-		case partType == 8:
+		case 8:
 			// high res time
 			err = binary.Read(partBuffer, binary.BigEndian, &val.CdTime)
 			if err != nil {
 				return nil, err
 			}
-		case partType == 9:
+		case 9:
 			// interval, ignore
-		case partType == 0x100:
+		case 0x100:
 			// message (notifications), ignore
-		case partType == 0x100:
+		case 0x101:
 			// severity, ignore
-		case partType == 0x200:
+		case 0x200:
 			// Signature (HMAC-SHA-256), todo
 			return nil, ErrorUnsupported
-		case partType == 0x210:
+		case 0x210:
 			// Encryption (AES-256/OFB/SHA-1), todo
 			return nil, ErrorUnsupported
 		default:
-			// todo: log unexpected type here
+			return nil, ErrorUnsupported
 		}
 	}
 	return &r, nil
