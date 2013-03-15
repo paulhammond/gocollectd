@@ -1,5 +1,9 @@
 package gocollectd
 
+import(
+	"time"
+)
+
 const (
 	Counter  = 0
 	Guage    = 1
@@ -17,4 +21,17 @@ type Value struct {
 	CdTime         uint64
 	DataType       uint8
 	Bytes          []byte
+}
+
+func (v Value) TimeUnixNano() int64 {
+	// 1.0737... is 2^30 (collectds' subsecond interval) / 10^-9 (nanoseconds)
+	return int64(float64(v.CdTime) / 1.073741824)
+}
+
+func (v Value) TimeUnix() int64 {
+	return int64(v.CdTime >> 30)
+}
+
+func (v Value) Time() time.Time {
+	return time.Unix(0, v.TimeUnixNano())
 }
