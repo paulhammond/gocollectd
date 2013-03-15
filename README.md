@@ -87,5 +87,5 @@ Signed and encrypted collectd packets are not currently supported.
 
 ## License
 
-Copyright (c) 2013 Paul Hammond. Gocollectd is available under the MIT
+Copyright (c) 2013 Paul Hammond. gocollectd is available under the MIT
 license, see [LICENSE.txt](LICENSE.txt) for details

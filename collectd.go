@@ -1,6 +1,7 @@
 // Copyright 2013 Paul Hammond.
 // This software is licensed under the MIT license, see LICENSE.txt for details.
 
+// gocollectd parses the collectd binary protocol.
 package gocollectd
 
 import (
