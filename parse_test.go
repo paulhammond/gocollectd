@@ -51,11 +51,11 @@ func TestParse5(t *testing.T) {
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00", // 2 more values
 	)
 	expected := []Value{
-		{"laptop.lan", "memory", "", "", "wired", 0, 1463827927039889790, 1, h2b("00 00 00 00 00 43 cf 41")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 0, 1463827927039906970, 2, h2b("00 00 00 00 00 88 07 8b")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 1, 1463827927039906970, 2, h2b("00 00 00 00 00 88 07 8c")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927040016492, 2, h2b("00 00 00 00 00 00 00 00")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927040016492, 2, h2b("00 00 00 00 00 00 00 00")},
+		{"laptop.lan", "memory", "", "", "wired", 0, 1463827927039889790, Guage, h2b("00 00 00 00 00 43 cf 41")},
+		{"laptop.lan", "interface", "lo0", "if_octets", "", 0, 1463827927039906970, Derive, h2b("00 00 00 00 00 88 07 8b")},
+		{"laptop.lan", "interface", "lo0", "if_octets", "", 1, 1463827927039906970, Derive, h2b("00 00 00 00 00 88 07 8c")},
+		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927040016492, Derive, h2b("00 00 00 00 00 00 00 00")},
+		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927040016492, Derive, h2b("00 00 00 00 00 00 00 00")},
 	}
 	result, err := Parse(b)
 	if err != nil {
@@ -87,11 +87,11 @@ func TestParse4(t *testing.T) {
 	)
 
 	expected := []Value{
-		{"laptop.lan", "memory", "", "", "wired", 0, 1463827926175711232, 1, h2b("00 00 00 00 00 43 cf 41")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 0, 1463827927249453056, 2, h2b("00 00 00 00 00 88 07 8b")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 1, 1463827927249453056, 2, h2b("00 00 00 00 00 88 07 8c")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927249453056, 2, h2b("00 00 00 00 00 00 00 00")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927249453056, 2, h2b("00 00 00 00 00 00 00 00")},
+		{"laptop.lan", "memory", "", "", "wired", 0, 1463827926175711232, Guage, h2b("00 00 00 00 00 43 cf 41")},
+		{"laptop.lan", "interface", "lo0", "if_octets", "", 0, 1463827927249453056, Derive, h2b("00 00 00 00 00 88 07 8b")},
+		{"laptop.lan", "interface", "lo0", "if_octets", "", 1, 1463827927249453056, Derive, h2b("00 00 00 00 00 88 07 8c")},
+		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927249453056, Derive, h2b("00 00 00 00 00 00 00 00")},
+		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927249453056, Derive, h2b("00 00 00 00 00 00 00 00")},
 	}
 	result, err := Parse(b)
 	if err != nil {
