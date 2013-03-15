@@ -1,19 +1,19 @@
 package gocollectd
 
 import (
-	"testing"
 	"fmt"
-	"strings"
-	"strconv"
-	"reflect"
 	"io"
+	"reflect"
+	"strconv"
+	"strings"
+	"testing"
 )
 
 func hexdumpToBytes(s ...string) ([]byte, error) {
 	joined := strings.Join(s, " ")
 	a := strings.Split(joined, " ")
 	b := make([]byte, len(a))
-	for i, n := range(a) {
+	for i, n := range a {
 		byt, err := strconv.ParseUint(n, 16, 8)
 		if err != nil {
 			return []byte{}, err
@@ -26,7 +26,7 @@ func hexdumpToBytes(s ...string) ([]byte, error) {
 func h2b(s ...string) []byte {
 	b, err := hexdumpToBytes(s...)
 	if err != nil {
-	   panic(fmt.Sprintf("failed to convert %v to bytes", s))
+		panic(fmt.Sprintf("failed to convert %v to bytes", s))
 	}
 	return b
 }
@@ -46,8 +46,8 @@ func TestParse5(t *testing.T) {
 		"00 04 00 0e 69 66 5f 6f 63 74 65 74 73 00",    // type: if_octets
 		"00 05 00 05 00",                               // type instance: nil
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c", // 2 more values, note: the second one was manipulated to check order
-		"00 08 00 0c 14 50 8f be 73 84 40 6c",          // a new time
-		"00 04 00 0f 69 66 5f 70 61 63 6b 65 74 73 00", // plugin: ifpackets
+		"00 08 00 0c 14 50 8f be 73 84 40 6c",                                     // a new time
+		"00 04 00 0f 69 66 5f 70 61 63 6b 65 74 73 00",                            // plugin: ifpackets
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00", // 2 more values
 	)
 	expected := []Value{
@@ -82,7 +82,7 @@ func TestParse4(t *testing.T) {
 		"00 04 00 0e 69 66 5f 6f 63 74 65 74 73 00",    // type: if_octets
 		"00 05 00 05 00",                               // type instance: nil
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c", // 2 more values, note: the second one was manipulated to check order
-		"00 04 00 0f 69 66 5f 70 61 63 6b 65 74 73 00", // plugin: ifpackets
+		"00 04 00 0f 69 66 5f 70 61 63 6b 65 74 73 00",                            // plugin: ifpackets
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00", // 2 more values
 	)
 
@@ -113,26 +113,26 @@ func TestParseEmpty(t *testing.T) {
 }
 
 func TestErrors(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
-		in string
-		out error
-	} {
+		in   string
+		out  error
+	}{
 		// these should never get sent
-		{ "bad length packet", "00", io.ErrUnexpectedEOF },
-		{ "bad length packet", "00 00 00 03", ErrorInvalid },
-		{ "short packet", "00 00 00 04", ErrorInvalid },
-		{ "not enough data packet", "00 00 00 05", ErrorInvalid },
-		{ "valid packet with extra data", "00 05 00 05 00 ff", io.ErrUnexpectedEOF },
-		{ "valid packet with extra data", "00 05 00 05 00 ff ff", io.ErrUnexpectedEOF },
-		{ "valid packet with extra data", "00 05 00 05 00 ff ff ff", io.ErrUnexpectedEOF },
-		{ "valid packet with extra data", "00 05 00 05 00 ff ff ff ff", ErrorInvalid },
+		{"bad length packet", "00", io.ErrUnexpectedEOF},
+		{"bad length packet", "00 00 00 03", ErrorInvalid},
+		{"short packet", "00 00 00 04", ErrorInvalid},
+		{"not enough data packet", "00 00 00 05", ErrorInvalid},
+		{"valid packet with extra data", "00 05 00 05 00 ff", io.ErrUnexpectedEOF},
+		{"valid packet with extra data", "00 05 00 05 00 ff ff", io.ErrUnexpectedEOF},
+		{"valid packet with extra data", "00 05 00 05 00 ff ff ff", io.ErrUnexpectedEOF},
+		{"valid packet with extra data", "00 05 00 05 00 ff ff ff ff", ErrorInvalid},
 
 		// note: real encrypted and signed packets have more data, but
 		// the protocol is undocumented so I've not made realistic tests
-		{ "encrypted packet", "02 10 00 05 00", ErrorUnsupported },
-		{ "signed packet", "02 00 00 05 00", ErrorUnsupported },
-		{ "as-yet-undefined packet", "03 00 00 05 00", ErrorUnsupported },
+		{"encrypted packet", "02 10 00 05 00", ErrorUnsupported},
+		{"signed packet", "02 00 00 05 00", ErrorUnsupported},
+		{"as-yet-undefined packet", "03 00 00 05 00", ErrorUnsupported},
 	}
 	for _, test := range tests {
 		result, err := Parse(h2b(test.in))

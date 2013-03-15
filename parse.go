@@ -14,8 +14,8 @@ func Parse(b []byte) (*[]Value, error) {
 
 	buf := bytes.NewBuffer(b)
 	var val Value
-	var packetHeader struct{
-		PartType uint16
+	var packetHeader struct {
+		PartType   uint16
 		PartLength uint16
 	}
 	var time uint64
@@ -32,7 +32,7 @@ func Parse(b []byte) (*[]Value, error) {
 		}
 
 		partBytes := buf.Next(int(packetHeader.PartLength) - 4)
-		if len(partBytes) < int(packetHeader.PartLength) - 4 {
+		if len(partBytes) < int(packetHeader.PartLength)-4 {
 			return nil, ErrorInvalid
 		}
 		partBuffer := bytes.NewBuffer(partBytes)
