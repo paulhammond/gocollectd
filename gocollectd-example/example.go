@@ -15,10 +15,13 @@ func main() {
 
 	for {
 		packet := <-c
-		fmt.Println("-")
 		for i, name := range packet.ValueNames() {
 			values, _ := packet.ValueNumbers()
-			fmt.Printf("%s %35s %v\n", packet.Time().Format(time.RFC3339), name, values[i])
+			newpacket := ""
+			if (i == 0) {
+				newpacket = "."
+			}
+			fmt.Printf("%2s %s %35s %v\n", newpacket, packet.Time().Format(time.RFC3339), name, values[i])
 		}
 	}
 }
