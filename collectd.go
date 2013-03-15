@@ -1,6 +1,6 @@
 package gocollectd
 
-import(
+import (
 	"time"
 )
 
@@ -11,27 +11,34 @@ const (
 	Absolute = 3
 )
 
-type Value struct {
+type Packet struct {
 	Hostname       string
 	Plugin         string
 	PluginInstance string
 	Type           string
 	TypeInstance   string
-	Number         uint16
 	CdTime         uint64
-	DataType       uint8
+	DataTypes      []uint8
 	Bytes          []byte
 }
 
-func (v Value) TimeUnixNano() int64 {
+func (p Packet) TimeUnixNano() int64 {
 	// 1.0737... is 2^30 (collectds' subsecond interval) / 10^-9 (nanoseconds)
-	return int64(float64(v.CdTime) / 1.073741824)
+	return int64(float64(p.CdTime) / 1.073741824)
 }
 
-func (v Value) TimeUnix() int64 {
-	return int64(v.CdTime >> 30)
+func (p Packet) TimeUnix() int64 {
+	return int64(p.CdTime >> 30)
 }
 
-func (v Value) Time() time.Time {
-	return time.Unix(0, v.TimeUnixNano())
+func (p Packet) Time() time.Time {
+	return time.Unix(0, p.TimeUnixNano())
+}
+
+func (p Packet) ValueBytes() [][]byte {
+	b := make([][]byte, len(p.DataTypes))
+	for i := range b {
+		b[i] = p.Bytes[i*8 : 8+(i*8)]
+	}
+	return b
 }

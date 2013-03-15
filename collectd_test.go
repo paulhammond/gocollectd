@@ -1,32 +1,44 @@
 package gocollectd
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
 
-var testValue = Value{"laptop.lan", "memory", "", "", "wired", 0, 1463827927039889790, Guage, h2b("00 00 00 00 00 43 cf 41")}
+var testPacket = Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927039889790, []uint8{Guage, Guage}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")}
 var testDate = time.Date(2013, time.March, 14, 21, 19, 53, 804828672, time.UTC)
 
-func TestValueTime(t *testing.T) {
-	result := testValue.Time()
+func TestPacketTime(t *testing.T) {
+	result := testPacket.Time()
 	if !result.Equal(testDate) {
 		t.Errorf("expected %v, got %v", testDate, result)
 	}
 }
 
-func TestValueSeconds(t *testing.T) {
-	result := testValue.TimeUnix()
+func TestPacketSeconds(t *testing.T) {
+	result := testPacket.TimeUnix()
 	expected := testDate.Unix()
 	if result != expected {
 		t.Errorf("expected %v, got %v", expected, result)
 	}
 }
 
-func TestValueNanoSeconds(t *testing.T) {
-	result := testValue.TimeUnixNano()
+func TestPacketNanoSeconds(t *testing.T) {
+	result := testPacket.TimeUnixNano()
 	expected := testDate.UnixNano()
 	if result != expected {
 		t.Errorf("expected %v, got %v", expected, result)
+	}
+}
+
+func TestPacketValueBytes(t *testing.T) {
+	result := testPacket.ValueBytes()
+	expected := [][]byte{
+		h2b("00 00 00 00 00 88 07 8b"),
+		h2b("00 00 00 00 00 88 07 8c"),
+	}
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("expected\n%v\ngot\n%v", expected, result)
 	}
 }

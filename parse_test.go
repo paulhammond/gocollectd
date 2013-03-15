@@ -50,12 +50,10 @@ func TestParse5(t *testing.T) {
 		"00 04 00 0f 69 66 5f 70 61 63 6b 65 74 73 00",                            // plugin: ifpackets
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00", // 2 more values
 	)
-	expected := []Value{
-		{"laptop.lan", "memory", "", "", "wired", 0, 1463827927039889790, Guage, h2b("00 00 00 00 00 43 cf 41")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 0, 1463827927039906970, Derive, h2b("00 00 00 00 00 88 07 8b")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 1, 1463827927039906970, Derive, h2b("00 00 00 00 00 88 07 8c")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927040016492, Derive, h2b("00 00 00 00 00 00 00 00")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927040016492, Derive, h2b("00 00 00 00 00 00 00 00")},
+	expected := []Packet{
+		{"laptop.lan", "memory", "", "", "wired", 1463827927039889790, []uint8{Guage}, h2b("00 00 00 00 00 43 cf 41")},
+		{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927039906970, []uint8{Derive, Derive}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")},
+		{"laptop.lan", "interface", "lo0", "if_packets", "", 1463827927040016492, []uint8{Derive, Derive}, h2b("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")},
 	}
 	result, err := Parse(b)
 	if err != nil {
@@ -86,12 +84,10 @@ func TestParse4(t *testing.T) {
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00", // 2 more values
 	)
 
-	expected := []Value{
-		{"laptop.lan", "memory", "", "", "wired", 0, 1463827926175711232, Guage, h2b("00 00 00 00 00 43 cf 41")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 0, 1463827927249453056, Derive, h2b("00 00 00 00 00 88 07 8b")},
-		{"laptop.lan", "interface", "lo0", "if_octets", "", 1, 1463827927249453056, Derive, h2b("00 00 00 00 00 88 07 8c")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 0, 1463827927249453056, Derive, h2b("00 00 00 00 00 00 00 00")},
-		{"laptop.lan", "interface", "lo0", "if_packets", "", 1, 1463827927249453056, Derive, h2b("00 00 00 00 00 00 00 00")},
+	expected := []Packet{
+		{"laptop.lan", "memory", "", "", "wired", 1463827926175711232, []uint8{Guage}, h2b("00 00 00 00 00 43 cf 41")},
+		{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, []uint8{Derive, Derive}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")},
+		{"laptop.lan", "interface", "lo0", "if_packets", "", 1463827927249453056, []uint8{Derive, Derive}, h2b("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")},
 	}
 	result, err := Parse(b)
 	if err != nil {
@@ -107,7 +103,7 @@ func TestParseEmpty(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	if !reflect.DeepEqual(*result, []Value{}) {
+	if !reflect.DeepEqual(*result, []Packet{}) {
 		t.Errorf("expected [] got %v", *result)
 	}
 }

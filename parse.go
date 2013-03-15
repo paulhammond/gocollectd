@@ -9,18 +9,18 @@ import (
 var ErrorUnsupported = errors.New("Unsupported collectd packet recieved")
 var ErrorInvalid = errors.New("Invalid collectd packet recieved")
 
-func Parse(b []byte) (*[]Value, error) {
-	r := make([]Value, 0)
+func Parse(b []byte) (*[]Packet, error) {
+	r := make([]Packet, 0)
 
 	buf := bytes.NewBuffer(b)
-	var val Value
+	var p Packet
 	var packetHeader struct {
 		PartType   uint16
 		PartLength uint16
 	}
 	var time uint64
-	var valueCount uint16
 	var err error
+	var valueCount uint16
 
 	for buf.Len() > 0 {
 		err = binary.Read(buf, binary.BigEndian, &packetHeader)
@@ -40,52 +40,52 @@ func Parse(b []byte) (*[]Value, error) {
 		switch packetHeader.PartType {
 		case 0:
 			str := partBuffer.String()
-			val.Hostname = str[0 : len(str)-1]
+			p.Hostname = str[0 : len(str)-1]
 		case 1:
 			err = binary.Read(partBuffer, binary.BigEndian, &time)
 			if err != nil {
 				return nil, err
 			}
-			val.CdTime = time << 30
+			p.CdTime = time << 30
 		case 2:
 			str := partBuffer.String()
-			val.Plugin = str[0 : len(str)-1]
+			p.Plugin = str[0 : len(str)-1]
 		case 3:
 			str := partBuffer.String()
-			val.PluginInstance = str[0 : len(str)-1]
+			p.PluginInstance = str[0 : len(str)-1]
 		case 4:
 			str := partBuffer.String()
-			val.Type = str[0 : len(str)-1]
+			p.Type = str[0 : len(str)-1]
 		case 5:
 			str := partBuffer.String()
-			val.TypeInstance = str[0 : len(str)-1]
+			p.TypeInstance = str[0 : len(str)-1]
 		case 6:
 			err = binary.Read(partBuffer, binary.BigEndian, &valueCount)
 			if err != nil {
 				return nil, err
 			}
 
-			for i := uint16(0); i < valueCount; i++ {
+			// make a copy so we lose reference to the underlying slice data
+			p.Bytes = make([]byte, 8*valueCount, 8*valueCount)
+			// collectd's protocol puts data in a seemingly weird
+			// order which appears to be exactly what we want.
+			copy(p.Bytes, partBytes[2+valueCount:2+valueCount+(valueCount*8)])
+			// todo: what if some data is missing?
 
-				valueBytes := make([]byte, 8, 8) // holds a copy so we lose reference to the underlying slice data
-
-				// messy: collectd's protocol puts things in a weird order.
-				err = binary.Read(partBuffer, binary.BigEndian, &val.DataType)
+			p.DataTypes = make([]uint8, valueCount, valueCount) // holds a copy so we lose reference to the underlying slice data
+			for i := range p.DataTypes {
+				err = binary.Read(partBuffer, binary.BigEndian, &p.DataTypes[i])
 				if err != nil {
 					return nil, err
 				}
-				copy(valueBytes, partBytes[2+valueCount+(i*8):2+valueCount+8+(i*8)])
-
-				val.Number = i
-				val.Bytes = valueBytes
-
-				r = append(r, val)
 			}
+
+			r = append(r, p)
 		case 7:
 			// interval, ignore
 		case 8:
 			// high res time
-			err = binary.Read(partBuffer, binary.BigEndian, &val.CdTime)
+			err = binary.Read(partBuffer, binary.BigEndian, &p.CdTime)
 			if err != nil {
 				return nil, err
 			}
