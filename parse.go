@@ -49,16 +49,16 @@ func Parse(b []byte) (*[]Value, error) {
 			val.CdTime = time << 30
 		case 2:
 			str := partBuffer.String()
-			val.plugin = str[0 : len(str)-1]
+			val.Plugin = str[0 : len(str)-1]
 		case 3:
 			str := partBuffer.String()
-			val.pluginInstance = str[0 : len(str)-1]
+			val.PluginInstance = str[0 : len(str)-1]
 		case 4:
 			str := partBuffer.String()
-			val.pluginType = str[0 : len(str)-1]
+			val.Type = str[0 : len(str)-1]
 		case 5:
 			str := partBuffer.String()
-			val.pluginTypeInstance = str[0 : len(str)-1]
+			val.TypeInstance = str[0 : len(str)-1]
 		case 6:
 			err = binary.Read(partBuffer, binary.BigEndian, &valueCount)
 			if err != nil {
