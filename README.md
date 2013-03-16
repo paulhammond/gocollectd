@@ -37,8 +37,8 @@ Packets instead of Values.
     fmt.Println(packet.ValueNames())   // { "load1", "load5", "load15" }
 
 Collectd values are sent as one of the RRD types: `Counter`, `Guage`,
-`Derive` or `Absolute`. This, in turn, means that they are sent as `int`s,
-`uint`s or `float`s. You have a few options on how to handle this:
+`Derive` or `Absolute`. This, in turn, means that they are sent as an `int64`,
+`uint64` or `float64`. You have a few options on how to handle this:
 
     // just get the bytes
     fmt.Println(packet.ValueBytes())   // [][]byte{ … }
@@ -72,7 +72,8 @@ An example is of using this server is provided in
 
 ## Known issues
 
-Signed and encrypted collectd packets are not currently supported.
+Signed and encrypted collectd packets are not currently supported. Intervals
+are not currently supported.
 
 ## References
 
