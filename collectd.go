@@ -7,6 +7,7 @@ package gocollectd
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -26,7 +27,7 @@ type Number interface {
 	CollectdType() uint8
 
 	// Float64 converts this number to a float to avoid type assertions.
-	Float64()      float64
+	Float64() float64
 }
 
 // A collectd Counter value
@@ -81,6 +82,23 @@ func (v Absolute) Float64() float64 {
 	return float64(v)
 }
 
+// A Value is what a packet contains.
+type Value struct {
+	dataType  uint8
+	bytes     []byte
+}
+
+// This value's raw bytes.
+func (v Value) Bytes() []byte {
+	return v.bytes
+}
+
+// Number converts this value into a Number.
+func (v Value) Number() (Number, error) {
+	r := bytes.NewReader(v.bytes)
+	return byteReaderToNumber(v.dataType, r)
+}
+
 // A packet is a set of collectd values that were sent at once by a collectd
 // plugin.
 type Packet struct {
@@ -124,33 +142,28 @@ func (p Packet) ValueBytes() [][]byte {
 	return b
 }
 
+// Values returns the data in this packet as a []Value.
+func (p Packet) Values() ([]Value) {
+	values := make([]Value, len(p.DataTypes))
+	for i := range values {
+		values[i] = Value{p.DataTypes[i], p.Bytes[i*8 : 8+(i*8)] }
+	}
+	return values
+}
+
 // ValueNumbers returns the values as Numbers
 func (p Packet) ValueNumbers() ([]Number, error) {
 	r := make([]Number, len(p.DataTypes))
 
 	var err error
-	buf := bytes.NewBuffer(p.Bytes)
+	reader := bytes.NewReader(p.Bytes)
 	for i, t := range p.DataTypes {
-		switch t {
-		case TypeCounter:
-			var v Counter
-			err = binary.Read(buf, binary.BigEndian, &v)
-			r[i] = v
-		case TypeGuage:
-			var v Guage
-			err = binary.Read(buf, binary.BigEndian, &v)
-			r[i] = v
-		case TypeDerive:
-			var v Derive
-			err = binary.Read(buf, binary.BigEndian, &v)
-			r[i] = v
-		case TypeAbsolute:
-			var v Absolute
-			err = binary.Read(buf, binary.BigEndian, &v)
-			r[i] = v
+		r[i], err = byteReaderToNumber(t, reader)
+		if err != nil {
+			return []Number{}, err
 		}
 	}
-	return r, err
+	return r, nil
 }
 
 // ValueNames attempts to reformat collectd's plugin/type/instance heirarchy
@@ -206,4 +219,26 @@ func (p Packet) ValueNames() []string {
 		}
 	}
 	return r
+}
+
+func byteReaderToNumber(dataType uint8, reader *bytes.Reader) (n Number, err error) {
+	switch dataType {
+	case TypeCounter:
+		var v Counter
+		err = binary.Read(reader, binary.BigEndian, &v)
+		return v, err
+	case TypeGuage:
+		var v Guage
+		err = binary.Read(reader, binary.BigEndian, &v)
+		return v, err
+	case TypeDerive:
+		var v Derive
+		err = binary.Read(reader, binary.BigEndian, &v)
+		return v, err
+	case TypeAbsolute:
+		var v Absolute
+		err = binary.Read(reader, binary.BigEndian, &v)
+		return v, err
+	}
+	return nil, errors.New("unknown value type")
 }

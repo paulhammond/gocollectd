@@ -56,6 +56,11 @@ Collectd values are sent as one of the RRD types: `Counter`, `Guage`,
        // do something with i, knowing it's an int64
     }
 
+    // this is all also available using Values()
+    value := packet.Values()[0]
+    fmt.Println(value.Number) // 1.13
+    fmt.Println(value.Bytes)  // []byte{ … }
+
 The most common use case is to read collectd data directly from the network.
 A simple server implementation is provided that sends received packets on a
 channel:
