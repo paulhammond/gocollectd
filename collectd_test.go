@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var testPacket = Packet{"laptop.lan", "fake", "", "", "", 1463827927039889790, []uint8{TypeDerive, TypeGuage, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 41 cf 43 00 00 00 00 00 00 00 00 00 00 88 07 8c")}
+var testPacket = Packet{"laptop.lan", "fake", "", "", "", 1463827927039889790, 10737418240, []uint8{TypeDerive, TypeGuage, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 41 cf 43 00 00 00 00 00 00 00 00 00 00 88 07 8c")}
 var testDate = time.Date(2013, time.March, 14, 21, 19, 53, 804828672, time.UTC)
 var testValue = Value{TypeGuage, h2b("41 cf 43 00 00 00 00 00")}
 
@@ -106,23 +106,23 @@ func TestPacketName(t *testing.T) {
 		name   string
 	}{
 		{
-			Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, []uint8{TypeDerive, TypeDerive}, []byte{}},
+			Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, 10737418240, []uint8{TypeDerive, TypeDerive}, []byte{}},
 			"if_octets_lo0",
 		},
 		{
-			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
 			"memory_wired",
 		},
 		{
-			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
 			"load",
 		},
 		{
-			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
 			"df_root_used",
 		},
 		{
-			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, []uint8{TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage}, []byte{}},
 			"plugin_some_thing_here",
 		},
 	}
@@ -142,23 +142,23 @@ func TestPacketValueNames(t *testing.T) {
 		names  []string
 	}{
 		{
-			Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, []uint8{TypeDerive, TypeDerive}, []byte{}},
+			Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, 10737418240, []uint8{TypeDerive, TypeDerive}, []byte{}},
 			[]string{"if_octets_lo0_tx", "if_octets_lo0_rx"},
 		},
 		{
-			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
 			[]string{"memory_wired"},
 		},
 		{
-			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
 			[]string{"load_1", "load_5", "load_15"},
 		},
 		{
-			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
 			[]string{"df_root_used"},
 		},
 		{
-			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, []uint8{TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage}, []byte{}},
 			[]string{"plugin_some_thing_here_0", "plugin_some_thing_here_1"},
 		},
 	}

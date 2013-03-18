@@ -108,6 +108,7 @@ type Packet struct {
 	Type           string
 	TypeInstance   string
 	CdTime         uint64
+	CdInterval     uint64
 	DataTypes      []uint8
 	Bytes          []byte
 }

@@ -96,7 +96,12 @@ func Parse(b []byte) (*[]Packet, error) {
 
 			r = append(r, p)
 		case 7:
-			// interval, todo
+			// interval
+			err = binary.Read(partBuffer, binary.BigEndian, &time)
+			if err != nil {
+				return nil, err
+			}
+			p.CdInterval = time << 30
 		case 8:
 			// high res time
 			err = binary.Read(partBuffer, binary.BigEndian, &p.CdTime)
@@ -104,7 +109,11 @@ func Parse(b []byte) (*[]Packet, error) {
 				return nil, err
 			}
 		case 9:
-			// hi res interval, todo
+			// hi res interval
+			err = binary.Read(partBuffer, binary.BigEndian, &p.CdInterval)
+			if err != nil {
+				return nil, err
+			}
 		case 0x100:
 			// message (notifications), ignore
 		case 0x101:

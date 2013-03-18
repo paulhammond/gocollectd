@@ -77,8 +77,7 @@ An example is of using this server is provided in
 
 ## Known issues
 
-Signed and encrypted collectd packets are not currently supported. Intervals
-are not currently supported.
+Signed and encrypted collectd packets are not currently supported.
 
 ## References
 
