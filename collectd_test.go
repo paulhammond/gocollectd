@@ -69,6 +69,42 @@ func TestPacketValueNumbers(t *testing.T) {
 	}
 }
 
+func TestPacketName(t *testing.T) {
+	tests := []struct {
+		packet Packet
+		name   string
+	}{
+		{
+			Packet{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, []uint8{TypeDerive, TypeDerive}, []byte{}},
+			"if_octets_lo0",
+		},
+		{
+			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, []uint8{TypeGuage}, []byte{}},
+			"memory_wired",
+		},
+		{
+			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
+			"load",
+		},
+		{
+			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, []uint8{TypeGuage}, []byte{}},
+			"df_root_used",
+		},
+		{
+			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, []uint8{TypeGuage, TypeGuage}, []byte{}},
+			"plugin_some_thing_here",
+		},
+	}
+
+	for i, tst := range tests {
+		result := tst.packet.Name()
+		if tst.name != result {
+			t.Errorf("%i: expected\n%v\ngot\n%v", i, tst.name, result)
+		}
+	}
+
+}
+
 func TestPacketValueNames(t *testing.T) {
 	tests := []struct {
 		packet Packet
@@ -84,7 +120,7 @@ func TestPacketValueNames(t *testing.T) {
 		},
 		{
 			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
-			[]string{"load1", "load5", "load15"},
+			[]string{"load_1", "load_5", "load_15"},
 		},
 		{
 			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, []uint8{TypeGuage}, []byte{}},

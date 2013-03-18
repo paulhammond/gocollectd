@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -153,39 +154,56 @@ func (p Packet) ValueNumbers() ([]Number, error) {
 }
 
 // ValueNames attempts to reformat collectd's plugin/type/instance heirarchy
-// into strings.
+// into a string for this packet.
+func (p Packet) Name() (name string) {
+	// todo: think of ways to make this not a compiled in hack
+	// todo: collectd 4 uses different patterns for some plugins
+	// https://collectd.org/wiki/index.php/V4_to_v5_migration_guide
+	switch p.Plugin {
+	case "df":
+		name = fmt.Sprintf("df_%s_%s", p.PluginInstance, p.TypeInstance)
+	case "interface":
+		name = fmt.Sprintf("%s_%s", p.Type, p.PluginInstance)
+	case "load":
+		name = "load"
+	case "memory":
+		name = fmt.Sprintf("memory_%s", p.TypeInstance)
+	default:
+		name = fmt.Sprintf("%s_%s_%s_%s", p.Plugin, p.PluginInstance, p.Type, p.TypeInstance)
+	}
+	return name
+}
+
+// ValueNames attempts to reformat collectd's plugin/type/instance heirarchy
+// into a strings for each value in this packet.
 func (p Packet) ValueNames() []string {
 	r := make([]string, len(p.DataTypes))
 	for i := range p.DataTypes {
-		var name string
-		// todo: think of ways to make this not a compiled in hack
-		// todo: collectd 4 uses different patterns for some plugins
-		// https://collectd.org/wiki/index.php/V4_to_v5_migration_guide
-		switch p.Plugin {
-		case "df":
-			name = fmt.Sprintf("df_%s_%s", p.PluginInstance, p.TypeInstance)
-		case "interface":
-			switch i {
-			case 0:
-				name = fmt.Sprintf("%s_%s_tx", p.Type, p.PluginInstance)
-			case 1:
-				name = fmt.Sprintf("%s_%s_rx", p.Type, p.PluginInstance)
-			}
-		case "load":
-			switch i {
-			case 0:
-				name = "load1"
-			case 1:
-				name = "load5"
-			case 2:
-				name = "load15"
-			}
-		case "memory":
-			name = fmt.Sprintf("memory_%s", p.TypeInstance)
+		name := p.Name()
+		var valueName string
+		switch {
+		case p.Plugin == "df" && i == 0:
+			valueName = ""
+		case p.Plugin == "memory" && i == 0:
+			valueName = ""
+		case p.Plugin == "interface" && i == 0:
+			valueName = "tx"
+		case p.Plugin == "interface" && i == 1:
+			valueName = "rx"
+		case p.Plugin == "load" && i == 0:
+			valueName = "1"
+		case p.Plugin == "load" && i == 1:
+			valueName = "5"
+		case p.Plugin == "load" && i == 2:
+			valueName = "15"
 		default:
-			name = fmt.Sprintf("%s_%s_%s_%s_%d", p.Plugin, p.PluginInstance, p.Type, p.TypeInstance, i)
+			valueName = strconv.FormatInt(int64(i), 10)
 		}
-		r[i] = name
+		if valueName == "" {
+			r[i] = name
+		} else {
+			r[i] = fmt.Sprintf("%s_%s", name, valueName)
+		}
 	}
 	return r
 }
