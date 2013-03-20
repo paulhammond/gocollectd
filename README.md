@@ -40,7 +40,7 @@ Collectd values are sent as one of the RRD types: `Counter`, `Guage`,
 `Derive` or `Absolute`. This, in turn, means that they are sent as an `int64`,
 `uint64` or `float64`. You have a few options on how to handle this:
 
-    // just get the bytes
+    // get the bytes
     fmt.Println(packet.ValueBytes())   // [][]byte{ … }
 
     // or use the Number interface type
@@ -62,7 +62,7 @@ Collectd values are sent as one of the RRD types: `Counter`, `Guage`,
     fmt.Println(value.Bytes)  // []byte{ … }
 
 The most common use case is to read collectd data directly from the network.
-A simple server implementation is provided that sends received packets on a
+A basic server implementation is provided that sends received packets on a
 channel:
 
     c := make(chan collectd.Packet)
