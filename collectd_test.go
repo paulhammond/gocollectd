@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-var testPacket = Packet{"laptop.lan", "fake", "", "", "", 1463827927039889790, 10737418240, []uint8{TypeDerive, TypeGuage, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 41 cf 43 00 00 00 00 00 00 00 00 00 00 88 07 8c")}
+var testPacket = Packet{"laptop.lan", "fake", "", "", "", 1463827927039889790, 10737418240, []uint8{TypeDerive, TypeGauge, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 41 cf 43 00 00 00 00 00 00 00 00 00 00 88 07 8c")}
 var testDate = time.Date(2013, time.March, 14, 21, 19, 53, 804828672, time.UTC)
-var testValue = Value{TypeGuage, h2b("41 cf 43 00 00 00 00 00")}
+var testValue = Value{TypeGauge, h2b("41 cf 43 00 00 00 00 00")}
 
 func TestValueBytes(t *testing.T) {
 	result := testValue.Bytes()
@@ -26,7 +26,7 @@ func TestValueNumber(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
 	}
-	if result != Guage(1048969216) {
+	if result != Gauge(1048969216) {
 		t.Errorf("expected 1048969216 got %v", result)
 	}
 }
@@ -80,7 +80,7 @@ func TestPacketValueNumbers(t *testing.T) {
 	}
 	expected := []Number{
 		Derive(8914827),
-		Guage(1048969216),
+		Gauge(1048969216),
 		Derive(8914828),
 	}
 	if !reflect.DeepEqual(result, expected) {
@@ -92,7 +92,7 @@ func TestPacketValues(t *testing.T) {
 	result := testPacket.Values()
 	expected := []Value{
 		{TypeDerive, h2b("00 00 00 00 00 88 07 8b") },
-		{TypeGuage,  h2b("41 cf 43 00 00 00 00 00") },
+		{TypeGauge,  h2b("41 cf 43 00 00 00 00 00") },
 		{TypeDerive, h2b("00 00 00 00 00 88 07 8c") },
 	}
 	if !reflect.DeepEqual(result, expected) {
@@ -110,19 +110,19 @@ func TestPacketName(t *testing.T) {
 			"if_octets_lo0",
 		},
 		{
-			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, 10737418240, []uint8{TypeGauge}, []byte{}},
 			"memory_wired",
 		},
 		{
-			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, 10737418240, []uint8{TypeGauge, TypeGauge, TypeGauge}, []byte{}},
 			"load",
 		},
 		{
-			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, 10737418240, []uint8{TypeGauge}, []byte{}},
 			"df_root_used",
 		},
 		{
-			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, 10737418240, []uint8{TypeGauge, TypeGauge}, []byte{}},
 			"plugin_some_thing_here",
 		},
 	}
@@ -146,19 +146,19 @@ func TestPacketValueNames(t *testing.T) {
 			[]string{"if_octets_lo0_tx", "if_octets_lo0_rx"},
 		},
 		{
-			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "memory", "", "memory", "wired", 1463827927249453056, 10737418240, []uint8{TypeGauge}, []byte{}},
 			[]string{"memory_wired"},
 		},
 		{
-			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "load", "", "load", "wired", 1463827927249453056, 10737418240, []uint8{TypeGauge, TypeGauge, TypeGauge}, []byte{}},
 			[]string{"load_1", "load_5", "load_15"},
 		},
 		{
-			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, 10737418240, []uint8{TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "df", "root", "df_complex", "used", 1463827927249453056, 10737418240, []uint8{TypeGauge}, []byte{}},
 			[]string{"df_root_used"},
 		},
 		{
-			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, 10737418240, []uint8{TypeGuage, TypeGuage}, []byte{}},
+			Packet{"laptop.lan", "plugin", "some", "thing", "here", 1463827927249453056, 10737418240, []uint8{TypeGauge, TypeGauge}, []byte{}},
 			[]string{"plugin_some_thing_here_0", "plugin_some_thing_here_1"},
 		},
 	}

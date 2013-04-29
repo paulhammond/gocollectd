@@ -36,7 +36,7 @@ Packets instead of Values.
     fmt.Println(packet.ValueCount)     // 3
     fmt.Println(packet.ValueNames())   // { "load1", "load5", "load15" }
 
-Collectd values are sent as one of the RRD types: `Counter`, `Guage`,
+Collectd values are sent as one of the RRD types: `Counter`, `Gauge`,
 `Derive` or `Absolute`. This, in turn, means that they are sent as an `int64`,
 `uint64` or `float64`. You have a few options on how to handle this:
 

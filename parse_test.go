@@ -54,7 +54,7 @@ func TestParsev5(t *testing.T) {
 		"00 06 00 18 00 02 02 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00", // 2 more values
 	)
 	expected := []Packet{
-		{"laptop.lan", "memory", "", "", "wired", 1463827927039889790, 10737418240, []uint8{TypeGuage}, h2b("41 cf 43 00 00 00 00 00")},
+		{"laptop.lan", "memory", "", "", "wired", 1463827927039889790, 10737418240, []uint8{TypeGauge}, h2b("41 cf 43 00 00 00 00 00")},
 		{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927039906970, 10737418240, []uint8{TypeDerive, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")},
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 1463827927040016492, 10737418240, []uint8{TypeDerive, TypeDerive}, h2b("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")},
 	}
@@ -88,7 +88,7 @@ func TestParsev4(t *testing.T) {
 	)
 
 	expected := []Packet{
-		{"laptop.lan", "memory", "", "", "wired", 1463827926175711232, 10737418240, []uint8{TypeGuage}, h2b("41 cf 43 00 00 00 00 00")},
+		{"laptop.lan", "memory", "", "", "wired", 1463827926175711232, 10737418240, []uint8{TypeGauge}, h2b("41 cf 43 00 00 00 00 00")},
 		{"laptop.lan", "interface", "lo0", "if_octets", "", 1463827927249453056, 10737418240, []uint8{TypeDerive, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 00 00 00 00 00 88 07 8c")},
 		{"laptop.lan", "interface", "lo0", "if_packets", "", 1463827927249453056, 10737418240, []uint8{TypeDerive, TypeDerive}, h2b("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00")},
 	}
@@ -100,7 +100,7 @@ func TestParsev4(t *testing.T) {
 	}
 }
 
-func TestParseGuages(t *testing.T) {
+func TestParseGauges(t *testing.T) {
 	b := h2b(
 		"00 00 00 0f 6c 61 70 74 6f 70 2e 6c 61 6e 00", // hostname: "laptop.lan"
 		"00 08 00 0c 14 50 8f be 73 82 51 7e",          // time, hi res
@@ -112,7 +112,7 @@ func TestParseGuages(t *testing.T) {
 		"00 00 00 00 00 88 07 8c",                      // value3
 	)
 	expected := []Packet{
-		{"laptop.lan", "memory", "", "", "", 1463827927039889790, 10737418240, []uint8{TypeDerive, TypeGuage, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 41 cf 43 00 00 00 00 00 00 00 00 00 00 88 07 8c")},
+		{"laptop.lan", "memory", "", "", "", 1463827927039889790, 10737418240, []uint8{TypeDerive, TypeGauge, TypeDerive}, h2b("00 00 00 00 00 88 07 8b 41 cf 43 00 00 00 00 00 00 00 00 00 00 88 07 8c")},
 	}
 	result, err := Parse(b)
 	if err != nil {

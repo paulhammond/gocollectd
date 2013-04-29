@@ -15,7 +15,7 @@ import (
 
 const (
 	TypeCounter  = 0
-	TypeGuage    = 1
+	TypeGauge    = 1
 	TypeDerive   = 2
 	TypeAbsolute = 3
 )
@@ -43,16 +43,16 @@ func (v Counter) Float64() float64 {
 	return float64(v)
 }
 
-// A collectd Guage value
-type Guage float64
+// A collectd Gauge value
+type Gauge float64
 
-// CollectdType returns TypeGuage
-func (v Guage) CollectdType() uint8 {
-	return TypeGuage
+// CollectdType returns TypeGauge
+func (v Gauge) CollectdType() uint8 {
+	return TypeGauge
 }
 
 // Float64 converts this number to a float to avoid type assertions.
-func (v Guage) Float64() float64 {
+func (v Gauge) Float64() float64 {
 	return float64(v)
 }
 
@@ -228,8 +228,8 @@ func byteReaderToNumber(dataType uint8, reader *bytes.Reader) (n Number, err err
 		var v Counter
 		err = binary.Read(reader, binary.BigEndian, &v)
 		return v, err
-	case TypeGuage:
-		var v Guage
+	case TypeGauge:
+		var v Gauge
 		err = binary.Read(reader, binary.BigEndian, &v)
 		return v, err
 	case TypeDerive:

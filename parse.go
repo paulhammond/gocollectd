@@ -85,9 +85,9 @@ func Parse(b []byte) (*[]Packet, error) {
 				return nil, err
 			}
 			for i, t := range p.DataTypes {
-				// derive/guage is little endian in protocol (!?)
+				// derive/gauge is little endian in protocol (!?)
 				// reverse it so other code can be big endian
-				if t == TypeGuage {
+				if t == TypeGauge {
 					for j, k := i*8, (i*8)+7; j < k; j, k = j+1, k-1 {
 						p.Bytes[j], p.Bytes[k] = p.Bytes[k], p.Bytes[j]
 					}
